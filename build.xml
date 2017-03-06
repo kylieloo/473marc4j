@@ -6,10 +6,96 @@
        <!-- <record name="build.log" loglevel="verbose" append="no" /> -->
     </target>
 
-    <property file="build.properties" />
-<property name="mutation" value=":NONE"/>
-<property name="mutator" value="-XMutator${mutation}"/>
-<property name="major" value="/home/kyliel/Documents/major/bin/javac"/>
+    <property file="build.properties"/>
+
+
+
+<!-- ============================================================================================================================================= -->
+
+
+    <!-- ##############################################
+      Path to Major and Mutation options 
+      Use -Dmutation="=mml-file" to set path to mml-file
+     ############################################## -->
+    <property name="mutOp" value=":ALL"/>
+    <property name="mutator" value="-XMutator${mutOp}"/>
+    <property name="major" value="major/bin/javac"/>
+
+    <!-- ====================================================================== -->
+    <!-- Help target                                                            -->
+    <!-- ====================================================================== -->
+
+    <target name="help">
+        <echo message="Please run: $ant -projecthelp"/>
+    </target>
+
+    <!-- Target to clean up -->
+    <target name="major-clean" depends="clean" description="Clean Major">
+        <delete dir="build-major"/>
+        <delete>
+            <fileset dir="." includes="*.csv"/>
+            <fileset dir="." includes="*.log"/>
+      </delete>
+    </target>
+
+
+    <!-- Target to initialize build -->
+    <target name="major-init">
+        <mkdir dir="build-major"/>
+    </target>
+
+
+    <!-- Target to compile the project -->
+    <target name="major-compile" depends="major-init, compile-all" description="Compile with Major">
+        <javac includeantruntime="true" 
+               srcdir="${src.dir}"
+               destdir="build-major"
+               debug="yes"
+               fork="yes"
+               executable="${major}">
+               <compilerarg value="${mutator}"/>
+        </javac>
+    </target>
+
+
+    <!-- Target to compile the test suite -->
+    <target name="major-compile.tests" depends="major-init, compile-tests" description="Compile all tests wtih Major">
+        <javac includeantruntime="true" 
+               srcdir="${test.src.dir}"
+               destdir="build-major"
+               debug="yes"
+               executable="${major}">
+
+            <classpath refid="test.classpath" />
+        </javac>
+    </target>
+
+    <!--  The adapted mutation test target  -->
+    <target name="mutation.test" description="Run mutation analysis for all unit test cases">
+        <echo message="Running mutation analysis ..."/>
+        <junit  printsummary="false" 
+                showoutput="false" 
+                mutationAnalysis="true" 
+                resultFile="results.csv"
+                killDetailsFile="killed.csv">
+
+            <classpath refid="test.classpath" />
+            <batchtest fork="false">
+                <fileset dir="${test.src.dir}">
+                    <include name="**/*Test*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+
+
+
+<!-- ============================================================================================================================================= -->
+
+
+
+
     <target name="prepare" depends="init,setup-ivy" unless="prepared">
         <mkdir dir="${build.dir}" />
         <mkdir dir="${build.classes.dir}"/>
@@ -42,14 +128,6 @@
             <include name="**/*.jar" />
         </fileset>
     </path>
-
-<property name="mutOp" value=":NONE"/>
-<target name="compile" depends="init" description="Compile">
-<javac srcdir="src" destdir="bin" debug="yes"
-fork="yes" executable="/home/kyliel/Documents/major/bin/javac">
-<compilerarg value="-XMutator${mutOp}"/>
-</javac>
-</target>
 
     <target name="prepare-codetablegen" depends="prepare">
         <mkdir dir="${build.generated-src.dir}/org/marc4j/converter/impl" />
@@ -96,17 +174,7 @@ fork="yes" executable="/home/kyliel/Documents/major/bin/javac">
             <classpath refid="test.classpath" />
         </javac>
     </target>
-<target name="mutation.test" description="Run mutation analysis for all unit test cases">
-<echo message="Running mutation analysis ..."/>
-<junit printsummary="false" mutantsLogFile="mutants.log"  showoutput="false" mutationAnalysis="true" resultFile="results.csv" killDetailsFile="killed.csv">
-<classpath path="bin"/>
-<batchtest fork="false">
-<fileset dir="test">
-<include name="**/*Test*.java"/>
-</fileset>
-</batchtest>
-</junit>
-</target>
+
     <target name="test" depends="compile-all,compile-tests">
         <junit fork="yes" forkmode="perBatch" haltonfailure="true">
             <batchtest>
