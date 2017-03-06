@@ -7,7 +7,9 @@
     </target>
 
     <property file="build.properties" />
-
+<property name="mutation" value=":NONE"/>
+<property name="mutator" value="-XMutator${mutation}"/>
+<property name="major" value="/home/kyliel/Documents/major/bin/javac"/>
     <target name="prepare" depends="init,setup-ivy" unless="prepared">
         <mkdir dir="${build.dir}" />
         <mkdir dir="${build.classes.dir}"/>
@@ -40,6 +42,14 @@
             <include name="**/*.jar" />
         </fileset>
     </path>
+
+<property name="mutOp" value=":NONE"/>
+<target name="compile" depends="init" description="Compile">
+<javac srcdir="src" destdir="bin" debug="yes"
+fork="yes" executable="/home/kyliel/Documents/major/bin/javac">
+<compilerarg value="-XMutator${mutOp}"/>
+</javac>
+</target>
 
     <target name="prepare-codetablegen" depends="prepare">
         <mkdir dir="${build.generated-src.dir}/org/marc4j/converter/impl" />
@@ -86,7 +96,17 @@
             <classpath refid="test.classpath" />
         </javac>
     </target>
-
+<target name="mutation.test" description="Run mutation analysis for all unit test cases">
+<echo message="Running mutation analysis ..."/>
+<junit printsummary="false" mutantsLogFile="mutants.log"  showoutput="false" mutationAnalysis="true" resultFile="results.csv" killDetailsFile="killed.csv">
+<classpath path="bin"/>
+<batchtest fork="false">
+<fileset dir="test">
+<include name="**/*Test*.java"/>
+</fileset>
+</batchtest>
+</junit>
+</target>
     <target name="test" depends="compile-all,compile-tests">
         <junit fork="yes" forkmode="perBatch" haltonfailure="true">
             <batchtest>
