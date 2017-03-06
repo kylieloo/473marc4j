@@ -1,0 +1,13 @@
+TestNo,TestName
+1,org.marc4j.test.ControlFieldTest
+2,org.marc4j.test.DataFieldTest
+3,org.marc4j.test.JsonReaderTest
+4,org.marc4j.test.LeaderTest
+5,org.marc4j.test.MarcFilteredReaderTest
+6,org.marc4j.test.MarcScriptedEditRecordReaderTest
+7,org.marc4j.test.MarcStreamReaderTest
+8,org.marc4j.test.MarcStreamWriterTest
+9,org.marc4j.test.MarcXmlReaderTest
+10,org.marc4j.test.ReaderTest
+11,org.marc4j.test.RecordTest
+12,org.marc4j.test.SubfieldTest
